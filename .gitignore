@@ -20,6 +20,12 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Claude Code local settings (may contain credentials)
+.claude/settings.local.json
+
+# Supabase temp files
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
