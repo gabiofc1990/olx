@@ -1,6 +1,6 @@
 // Server-only — interfaces compartilhadas pelos adapters de gateway.
 
-export type GatewayProvider = "bspay" | "pushinpay" | "pixup" | "blackcat";
+export type GatewayProvider = "bspay" | "pushinpay" | "pixup" | "blackcat" | "vizzionpay";
 
 export type CreatePixInput = {
   amountCents: number;

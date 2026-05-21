@@ -10,7 +10,7 @@ import {
   CreditCard, Check, Pencil, Trash2, Plus, Power, ExternalLink, AlertCircle, Loader2,
 } from "lucide-react";
 
-type Provider = "bspay" | "pushinpay" | "pixup" | "blackcat";
+type Provider = "bspay" | "pushinpay" | "pixup" | "blackcat" | "vizzionpay";
 
 type Gateway = {
   id: string;
@@ -48,6 +48,14 @@ const PROVIDER_META: Record<Provider, { label: string; fields: { key: string; la
     label: "BlackCat",
     fields: [{ key: "secret_key", label: "Secret Key", type: "password" }],
     docs: "https://docs.blackcatpagamentos.com/",
+  },
+  vizzionpay: {
+    label: "VizzionPay",
+    fields: [
+      { key: "public_key", label: "Chave Pública (x-public-key)" },
+      { key: "secret_key", label: "Chave Secreta (x-secret-key)", type: "password" },
+    ],
+    docs: "https://app.vizzionpay.com.br/docs",
   },
 };
 

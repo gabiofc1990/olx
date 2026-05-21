@@ -3,6 +3,7 @@ import { bspayAdapter } from "./bspay.server";
 import { pushinpayAdapter } from "./pushinpay.server";
 import { pixupAdapter } from "./pixup.server";
 import { blackcatAdapter } from "./blackcat.server";
+import { vizzionpayAdapter } from "./vizzionpay.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const ADAPTERS: Record<GatewayProvider, GatewayAdapter> = {
@@ -10,6 +11,7 @@ const ADAPTERS: Record<GatewayProvider, GatewayAdapter> = {
   pushinpay: pushinpayAdapter,
   pixup: pixupAdapter,
   blackcat: blackcatAdapter,
+  vizzionpay: vizzionpayAdapter,
 };
 
 export type ResolvedGateway = {
