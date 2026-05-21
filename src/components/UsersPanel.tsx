@@ -54,10 +54,14 @@ export function UsersPanel() {
     try {
       const res = await fetch("/api/admin/users", { headers });
       if (res.status === 401) { setNoAuth(true); setLoading(false); return; }
-      const json = await res.json();
+      if (!res.ok) {
+        setActionErr(`Erro do servidor (${res.status}). Verifique as variáveis de ambiente no Vercel.`);
+        setLoading(false); return;
+      }
+      const json = await res.json().catch(() => ({ users: [] }));
       setUsers(json.users ?? []);
     } catch {
-      setActionErr("Erro ao carregar usuários.");
+      setActionErr("Erro ao carregar usuários. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -77,13 +81,16 @@ export function UsersPanel() {
         headers,
         body: JSON.stringify(form),
       });
-      const json = await res.json();
-      if (!res.ok) { setFormErr(json.error ?? "Erro ao criar usuário."); setSaving(false); return; }
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFormErr(json.error ?? `Erro do servidor (${res.status}). Tente novamente.`);
+        setSaving(false); return;
+      }
       setShowModal(false);
       setForm(INITIAL_FORM);
       await load();
-    } catch {
-      setFormErr("Erro de rede.");
+    } catch (err: any) {
+      setFormErr(err?.message?.includes("fetch") ? "Erro de conexão. Verifique sua internet." : "Erro ao criar usuário. Tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -94,17 +101,21 @@ export function UsersPanel() {
     const newRole = user.role === "admin" ? "user" : "admin";
     const headers = await getAuthHeaders();
     if (!headers) { setActionErr("Sessão expirada."); return; }
-    const res = await fetch("/api/admin/users", {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ user_id: user.id, role: newRole }),
-    });
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      setActionErr(json.error ?? "Erro ao alterar papel.");
-      return;
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ user_id: user.id, role: newRole }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setActionErr(json.error ?? `Erro ao alterar papel (${res.status}).`);
+        return;
+      }
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
+    } catch {
+      setActionErr("Erro de conexão ao alterar papel.");
     }
-    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
   };
 
   const deleteUser = async (user: AdminUser) => {
@@ -112,17 +123,21 @@ export function UsersPanel() {
     setActionErr("");
     const headers = await getAuthHeaders();
     if (!headers) { setActionErr("Sessão expirada."); return; }
-    const res = await fetch("/api/admin/users", {
-      method: "DELETE",
-      headers,
-      body: JSON.stringify({ user_id: user.id }),
-    });
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      setActionErr(json.error ?? "Erro ao excluir usuário.");
-      return;
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ user_id: user.id }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setActionErr(json.error ?? `Erro ao excluir usuário (${res.status}).`);
+        return;
+      }
+      setUsers(prev => prev.filter(u => u.id !== user.id));
+    } catch {
+      setActionErr("Erro de conexão ao excluir usuário.");
     }
-    setUsers(prev => prev.filter(u => u.id !== user.id));
   };
 
   const filtered = users.filter(u => {

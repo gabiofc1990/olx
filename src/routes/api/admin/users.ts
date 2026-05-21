@@ -5,18 +5,21 @@ async function verifyAdmin(request: Request): Promise<string | null> {
   const authHeader = request.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) return null;
   const token = authHeader.replace("Bearer ", "");
+  try {
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !user) return null;
 
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-  if (error || !user) return null;
+    const { data: role } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
 
-  const { data: role } = await supabaseAdmin
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id)
-    .eq("role", "admin")
-    .maybeSingle();
-
-  return role ? user.id : null;
+    return role ? user.id : null;
+  } catch {
+    return null;
+  }
 }
 
 export const Route = createFileRoute("/api/admin/users")({
