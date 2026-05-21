@@ -1,12 +1,4 @@
 {
-  "rewrites": [
-    {
-      "source": "/admin/:path*",
-      "destination": "/admin/index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "npm run build",
+  "framework": null
 }
