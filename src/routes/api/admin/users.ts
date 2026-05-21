@@ -2,6 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 async function verifyAdmin(request: Request): Promise<string | null> {
+  // X-Admin-Key fallback for localStorage-based admin auth
+  const adminKey = request.headers.get("x-admin-key");
+  const envKey = process.env.ADMIN_API_KEY;
+  if (adminKey && envKey && adminKey === envKey) {
+    return "admin-key-user";
+  }
+
   const authHeader = request.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) return null;
   const token = authHeader.replace("Bearer ", "");

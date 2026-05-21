@@ -24,19 +24,24 @@ type FormState = {
 
 const INITIAL_FORM: FormState = { email: "", password: "", full_name: "", phone: "", role: "user" };
 
-async function getAuthHeaders(): Promise<Record<string, string> | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) return null;
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${session.access_token}`,
-  };
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      headers["Authorization"] = `Bearer ${session.access_token}`;
+      return headers;
+    }
+  } catch {}
+  // Fallback: admin key para usuários com auth via localStorage
+  const adminKey = (import.meta as any).env?.VITE_ADMIN_API_KEY;
+  if (adminKey) headers["X-Admin-Key"] = adminKey;
+  return headers;
 }
 
 export function UsersPanel() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [noAuth, setNoAuth] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [showPwd, setShowPwd] = useState(false);
@@ -49,13 +54,13 @@ export function UsersPanel() {
     setLoading(true);
     setActionErr("");
     const headers = await getAuthHeaders();
-    if (!headers) { setNoAuth(true); setLoading(false); return; }
-    setNoAuth(false);
     try {
       const res = await fetch("/api/admin/users", { headers });
-      if (res.status === 401) { setNoAuth(true); setLoading(false); return; }
       if (!res.ok) {
-        setActionErr(`Erro do servidor (${res.status}). Verifique as variáveis de ambiente no Vercel.`);
+        const msg = res.status === 401
+          ? "Sem permissão. Verifique se VITE_ADMIN_API_KEY está configurado no Vercel."
+          : `Erro do servidor (${res.status}).`;
+        setActionErr(msg);
         setLoading(false); return;
       }
       const json = await res.json().catch(() => ({ users: [] }));
@@ -74,7 +79,6 @@ export function UsersPanel() {
     setFormErr("");
     setSaving(true);
     const headers = await getAuthHeaders();
-    if (!headers) { setFormErr("Sessão expirada. Faça login novamente."); setSaving(false); return; }
     try {
       const res = await fetch("/api/admin/users", {
         method: "POST",
@@ -100,7 +104,6 @@ export function UsersPanel() {
     setActionErr("");
     const newRole = user.role === "admin" ? "user" : "admin";
     const headers = await getAuthHeaders();
-    if (!headers) { setActionErr("Sessão expirada."); return; }
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -122,7 +125,6 @@ export function UsersPanel() {
     if (!confirm(`Excluir o usuário "${user.email}"? Esta ação não pode ser desfeita.`)) return;
     setActionErr("");
     const headers = await getAuthHeaders();
-    if (!headers) { setActionErr("Sessão expirada."); return; }
     try {
       const res = await fetch("/api/admin/users", {
         method: "DELETE",
@@ -150,21 +152,6 @@ export function UsersPanel() {
       u.role.includes(q)
     );
   });
-
-  if (noAuth) {
-    return (
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 flex items-start gap-3">
-        <AlertCircle size={20} className="text-amber-400 shrink-0 mt-0.5" />
-        <div>
-          <p className="text-amber-300 font-semibold text-sm">Sessão Supabase necessária</p>
-          <p className="text-amber-400/80 text-xs mt-1">
-            Para gerenciar usuários é necessário ter uma conta autenticada no Supabase com papel de admin.
-            Faça logout e entre novamente com suas credenciais Supabase.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
