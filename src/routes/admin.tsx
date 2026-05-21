@@ -5,10 +5,11 @@ import {
   LayoutDashboard, Package, Users, LogOut, Plus, Search, Edit3, Trash2,
   Eye, EyeOff, Star, TrendingUp, ShoppingBag, DollarSign, Copy, Check,
   ExternalLink, Filter, ChevronRight, MessageCircle, Send, ArrowLeft, Menu, X,
-  CreditCard, Clock, CheckCircle2, XCircle,
+  CreditCard, Clock, CheckCircle2, XCircle, UserCog,
 } from "lucide-react";
 import { AdminChat } from "@/components/AdminChat";
 import { GatewaysPanel } from "@/components/GatewaysPanel";
+import { UsersPanel } from "@/components/UsersPanel";
 import { Wallet } from "lucide-react";
 
 function AdminErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
@@ -65,7 +66,7 @@ function AdminHome() {
   const location = useLocation();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [tab, setTab] = useState<"dashboard" | "anuncios" | "leads" | "chat" | "vendas" | "gateways">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "anuncios" | "leads" | "chat" | "vendas" | "gateways" | "usuarios">("dashboard");
   const [listings, setListings] = useState<Listing[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [pixes, setPixes] = useState<Pix[]>([]);
@@ -294,6 +295,7 @@ function AdminHome() {
           <NavBtn id="chat" icon={MessageCircle} label="Chat ao vivo" />
           <NavBtn id="anuncios" icon={Package} label="Anúncios" count={listings.length} />
           <NavBtn id="leads" icon={Users} label="Leads" />
+          <NavBtn id="usuarios" icon={UserCog} label="Usuários" />
           <NavBtn id="gateways" icon={Wallet} label="Gateways" />
         </nav>
         <div className="p-3 border-t border-slate-800 space-y-1">
@@ -318,6 +320,7 @@ function AdminHome() {
               {tab === "anuncios" && "Anúncios"}
               {tab === "leads" && "Leads capturados"}
               {tab === "gateways" && "Gateways de pagamento"}
+              {tab === "usuarios" && "Usuários"}
             </h1>
             <p className="text-sm text-slate-500 mt-1">
               {tab === "dashboard" && "Visão geral do seu marketplace em tempo real"}
@@ -326,6 +329,7 @@ function AdminHome() {
               {tab === "anuncios" && "Gerencie produtos, preços e seções"}
               {tab === "leads" && "Todos os logins capturados, atualizados ao vivo"}
               {tab === "gateways" && "Cadastre suas chaves e troque de gateway com 1 clique"}
+              {tab === "usuarios" && "Crie e gerencie usuários e administradores"}
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -341,6 +345,7 @@ function AdminHome() {
             {tab === "anuncios" && "Anúncios"}
             {tab === "leads" && "Leads capturados"}
             {tab === "gateways" && "Gateways"}
+            {tab === "usuarios" && "Usuários"}
           </h1>
         </div>
 
@@ -645,6 +650,10 @@ function AdminHome() {
 
         <section className={tab === "gateways" ? "block" : "hidden"} aria-hidden={tab !== "gateways"}>
           {tab === "gateways" && <GatewaysPanel />}
+        </section>
+
+        <section className={tab === "usuarios" ? "block" : "hidden"} aria-hidden={tab !== "usuarios"}>
+          {tab === "usuarios" && <UsersPanel />}
         </section>
       </main>
     </div>
