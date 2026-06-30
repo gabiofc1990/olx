@@ -3,7 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const PROVIDERS = ["bspay", "pushinpay", "pixup", "blackcat"] as const;
+const PROVIDERS = ["bspay", "pushinpay", "pixup", "blackcat", "vizzionpay"] as const;
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data } = await supabase
